@@ -1,6 +1,6 @@
 use std::{error::Error, rc::Rc};
 
-use nvml_wrapper::{Nvml, enum_wrappers::device::Brand};
+use nvml_wrapper::{enum_wrappers::device::{Brand, TemperatureSensor}, Nvml};
 
 use crate::{Gpu, GpuInfo};
 
@@ -47,19 +47,44 @@ struct NvidiaGpuInfo {
 #[cfg(feature = "gpu_info")]
 impl GpuInfo for NvidiaGpuInfo {
   fn total_vram(&self) -> u64 {
-    todo!()
+    let meminfo = match self.nvml.device_by_index(0)
+      .and_then(|device| device.memory_info()) {
+        Ok(meminfo) => meminfo,
+        Err(_) => return 0,
+      };
+
+    meminfo.total
   }
 
   fn used_vram(&self) -> u64 {
-    todo!()
+    let meminfo = match self.nvml.device_by_index(0)
+      .and_then(|device| device.memory_info()) {
+        Ok(meminfo) => meminfo,
+        Err(_) => return 0,
+      };
+
+    meminfo.used
   }
 
   fn load_pct(&self) -> u32 {
-    todo!()
+    let util = match self.nvml.device_by_index(0)
+      .and_then(|device| device.utilization_rates()) {
+        Ok(u) => u,
+        Err(_) => return 0,
+      };
+
+    util.gpu
   }
 
   fn temperature(&self) -> u32 {
-    todo!()
+    let temp = match self.nvml.device_by_index(0)
+      .and_then(|device| device.temperature(TemperatureSensor::Gpu)) {
+        Ok(u) => u,
+        Err(_) => return 0,
+      };
+
+    // This one returns as celsius, so we need to make it consistent
+    temp * 1000
   }
 }
 
