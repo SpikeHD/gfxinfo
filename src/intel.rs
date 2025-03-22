@@ -4,7 +4,7 @@ use crate::{Gpu, GpuInfo};
 
 #[derive(Debug)]
 pub struct IntelGpu {
-  nvml: Rc<()>,
+  device: Rc<()>,
 
   vendor: String,
   model: String,
@@ -32,14 +32,14 @@ impl Gpu for IntelGpu {
   #[cfg(feature = "gpu_info")]
   fn info(&self) -> Box<dyn GpuInfo> {
     Box::new(IntelGpuInfo {
-      nvml: self.nvml.clone(),
+      device: self.device.clone(),
     })
   }
 }
 
 #[cfg(feature = "gpu_info")]
 struct IntelGpuInfo {
-  nvml: Rc<()>,
+  device: Rc<()>,
 }
 
 #[cfg(feature = "gpu_info")]
