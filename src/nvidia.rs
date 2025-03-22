@@ -1,4 +1,4 @@
-use crate::Gpu;
+use crate::{Gpu, GpuInfo};
 
 #[derive(Debug, Clone)]
 pub struct NvidiaGpu {
@@ -25,5 +25,23 @@ impl Gpu for NvidiaGpu {
 
   fn device_id(&self) -> &u32 {
     &self.device_id
+  }
+}
+
+impl GpuInfo for NvidiaGpu {
+  fn total_vram(&self) -> u64 {
+    todo!()
+  }
+
+  fn used_vram(&self) -> u64 {
+    todo!()
+  }
+
+  fn load_pct(&self) -> u32 {
+    todo!()
+  }
+
+  fn temperature(&self) -> u32 {
+    todo!()
   }
 }

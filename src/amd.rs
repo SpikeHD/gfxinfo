@@ -1,8 +1,8 @@
 use std::{error::Error, fmt::Debug, fs::File, os::fd::AsRawFd, path::PathBuf, sync::{Arc, Mutex}};
 
-use libdrm_amdgpu_sys::{LibDrmAmdgpu, AMDGPU::{self, DeviceHandle, GPU_INFO}};
+use libdrm_amdgpu_sys::{LibDrmAmdgpu, AMDGPU::{self, DeviceHandle, GPU_INFO, SENSOR_INFO::SENSOR_TYPE}};
 
-use crate::Gpu;
+use crate::{Gpu, GpuInfo};
 
 #[derive(Clone)]
 pub struct AmdGpu {
@@ -42,6 +42,41 @@ impl Gpu for AmdGpu {
 
   fn device_id(&self) -> &u32 {
     &self.device_id
+  }
+}
+
+#[cfg(feature = "gpu_info")]
+impl GpuInfo for AmdGpu {
+  fn total_vram(&self) -> u64 {
+    let meminfo = match self.device.lock().unwrap().memory_info() {
+      Ok(meminfo) => meminfo,
+      Err(_) => return 0,
+    };
+
+    meminfo.vram.total_heap_size
+  }
+
+  fn used_vram(&self) -> u64 {
+    let meminfo = match self.device.lock().unwrap().memory_info() {
+      Ok(meminfo) => meminfo,
+      Err(_) => return 0,
+    };
+
+    meminfo.vram.heap_usage
+  }
+
+  fn load_pct(&self) -> u32 {
+    match self.device.lock().unwrap().sensor_info(SENSOR_TYPE::GPU_LOAD) {
+      Ok(pct) => pct,
+      Err(_) => return 0,
+    }
+  }
+
+  fn temperature(&self) -> u32 {
+    match self.device.lock().unwrap().sensor_info(SENSOR_TYPE::GPU_TEMP) {
+      Ok(temp) => temp,
+      Err(_) => return 0,
+    }
   }
 }
 

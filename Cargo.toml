@@ -10,7 +10,8 @@ dyn-clone = "1.0.19"
 libdrm_amdgpu_sys = { version = "0.8.4", optional = true }
 
 [features]
-default = ["amd", "nvidia", "intel"]
+default = ["amd", "nvidia", "intel", "gpu_info"]
 amd = ["dep:libdrm_amdgpu_sys"]
 nvidia = []
 intel = []
+gpu_info = []
