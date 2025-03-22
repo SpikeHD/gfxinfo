@@ -36,24 +36,5 @@ pub trait GpuInfo {
 
 /// Attempts to get the currently active GPU, using vendor-specific methods.
 pub fn active_gpu() -> Box<dyn Gpu> {
-  #[cfg(feature = "amd")]
-  {
-    let gpu = platform::amd::active_gpu();
-    if let Ok(gpu) = gpu {
-      return Box::new(gpu);
-    }
-  }
-
-  #[cfg(feature = "nvidia")]
-  {
-    let gpu = platform::nvidia::active_gpu();
-    if let Ok(gpu) = gpu {
-      return Box::new(gpu);
-    }
-  }
-
-  #[cfg(feature = "intel")]
-  {
-    todo!()
-  }
+  platform::active_gpu()
 }
