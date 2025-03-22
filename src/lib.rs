@@ -1,11 +1,11 @@
 use std::fmt::Debug;
 
-#[cfg(feature = "amd")]
-mod amd;
-#[cfg(feature = "intel")]
-mod intel;
-#[cfg(feature = "nvidia")]
-mod nvidia;
+#[cfg(target_os = "linux")]
+mod linux;
+#[cfg(target_os = "linux")]
+mod platform {
+  pub use crate::linux::*;
+}
 
 pub trait Gpu: Debug {
   /// Get the GPU vendor (ie. AMD, Nvidia).
@@ -38,7 +38,7 @@ pub trait GpuInfo {
 pub fn active_gpu() -> Box<dyn Gpu> {
   #[cfg(feature = "amd")]
   {
-    let gpu = amd::active_gpu();
+    let gpu = platform::amd::active_gpu();
     if let Ok(gpu) = gpu {
       return Box::new(gpu);
     }
@@ -46,7 +46,7 @@ pub fn active_gpu() -> Box<dyn Gpu> {
 
   #[cfg(feature = "nvidia")]
   {
-    let gpu = nvidia::active_gpu();
+    let gpu = platform::nvidia::active_gpu();
     if let Ok(gpu) = gpu {
       return Box::new(gpu);
     }
