@@ -40,14 +40,16 @@ println!("Temperature: {} C", info.temperature() / 1000);
 
 # TODO
 
-* [ ] Cross-platform
-  * [ ] Windows support
-  * [x] Linux support
-  * [ ] MacOS support
-* [ ] Multi-vendor
+* [ ] Cross-platform vendor support
   * [x] Nvidia
-  * [x] AMD
+    * [x] Windows
+    * [x] Linux 
+  * [ ] AMD
+    * [ ] Windows
+    * [x] Linux
   * [ ] Intel
+    * [ ] Windows
+    * [ ] Linux
   * [ ] Generic/Other
 * [ ] Supported information
   * [x] Vendor
