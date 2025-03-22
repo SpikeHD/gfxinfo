@@ -1,5 +1,5 @@
 pub fn main() {
-  let gpu = gpuinfo::active_gpu();
+  let gpu = gpuinfo::active_gpu().expect("No GPU found");
   let info = gpu.info();
   println!(
     "VRAM usage: {} / {}",

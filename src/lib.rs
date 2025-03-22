@@ -1,10 +1,17 @@
-use std::fmt::Debug;
+use std::{error::Error, fmt::Debug};
 
 #[cfg(target_os = "linux")]
 mod linux;
 #[cfg(target_os = "linux")]
 mod platform {
   pub use crate::linux::*;
+}
+
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(target_os = "windows")]
+mod platform {
+  pub use crate::windows::*;
 }
 
 pub trait Gpu: Debug {
@@ -35,6 +42,6 @@ pub trait GpuInfo {
 }
 
 /// Attempts to get the currently active GPU, using vendor-specific methods.
-pub fn active_gpu() -> Box<dyn Gpu> {
+pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
   platform::active_gpu()
 }
