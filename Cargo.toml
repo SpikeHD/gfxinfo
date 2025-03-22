@@ -1,0 +1,16 @@
+[package]
+name = "gpuinfo"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dyn-clone = "1.0.19"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libdrm_amdgpu_sys = { version = "0.8.4", optional = true }
+
+[features]
+default = ["amd", "nvidia", "intel"]
+amd = ["dep:libdrm_amdgpu_sys"]
+nvidia = []
+intel = []
