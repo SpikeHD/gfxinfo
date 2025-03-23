@@ -1,0 +1,63 @@
+name: Publish Library
+
+on:
+  push:
+    paths:
+      - "Cargo.toml"
+      - ".github/workflows/publish.yml"
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version_changed: ${{ steps.version_check.outputs.changed }}
+      new_version: ${{ steps.version_check.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract new version
+        id: version_check
+        run: |
+          VERSION=$(grep '^version =' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "Version: $VERSION"
+          if git tag -l | grep -q "v$VERSION"; then
+            echo "No new version!"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "New version!"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+  create-tag:
+    needs: check-version
+    if: needs.check-version.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ needs.check-version.outputs.new_version }}',
+              sha: context.sha
+            })
+
+  publish:
+    needs: create-tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Login to crates.io
+        run: cargo login ${{ secrets.CARGO_TOKEN }}
+
+      - name: Publish Library
+        run: cargo publish -p gfxinfo
