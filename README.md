@@ -32,7 +32,7 @@ println!("Temperature: {} C", info.temperature() / 1000);
 
 * Cross-platform, cross-vendor support
 * Plenty of feature flags
-* Simple
+* Low dependency count
 
 # Feature flags
 
@@ -46,15 +46,17 @@ println!("Temperature: {} C", info.temperature() / 1000);
 
 # TODO
 
+(Windows support is speculative, as it uses the Windows API and I don't have a Windows machine to test on. It did work partially in a VM using the basic display driver!)
+
 * [ ] Cross-platform vendor support
   * [x] Nvidia
     * [x] Windows
     * [x] Linux 
-  * [ ] AMD
-    * [ ] Windows
+  * [x] AMD
+    * [x] Windows
     * [x] Linux
   * [ ] Intel
-    * [ ] Windows
+    * [x] Windows
     * [ ] Linux
   * [ ] Generic/Other
 * [ ] Supported information
