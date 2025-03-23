@@ -61,3 +61,5 @@ jobs:
 
       - name: Publish Library
         run: cargo publish -p gfxinfo
+        env:
+          RUSTFLAGS: -Awarnings
