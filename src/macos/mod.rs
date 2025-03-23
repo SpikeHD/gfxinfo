@@ -1,15 +1,20 @@
-use std::{error::Error, marker::{PhantomData, PhantomPinned}, ptr::null_mut, str::FromStr};
+use std::{error::Error, ptr::null_mut};
 
-use io_kit_sys::{
-  kIOMasterPortDefault, ret::kIOReturnSuccess, types::{io_iterator_t, io_registry_entry_t}, IOIteratorNext, IOObjectRelease, IORegistryEntryCreateCFProperties, IOServiceGetMatchingService, IOServiceGetMatchingServices, IOServiceMatching
-};
-use core_foundation::{base::{kCFAllocatorDefault, CFRelease, CFTypeRef, TCFType, TCFTypeRef}, data::{CFData, __CFData}, dictionary::__CFDictionary, number::__CFNumber, string::{CFStringRef, __CFString}};
-use core_foundation::dictionary::{CFDictionary, CFDictionaryRef, CFMutableDictionaryRef};
-use core_foundation::number::{CFNumber, CFNumberRef};
+use core_foundation::dictionary::{CFDictionary, CFMutableDictionaryRef};
+use core_foundation::number::CFNumber;
 use core_foundation::string::CFString;
-use std::ptr;
-use std::thread;
-use std::time::Duration;
+use core_foundation::{
+  base::{CFRelease, CFTypeRef, TCFType, TCFTypeRef, kCFAllocatorDefault},
+  data::{__CFData, CFData},
+  dictionary::__CFDictionary,
+  number::__CFNumber,
+  string::__CFString,
+};
+use io_kit_sys::{
+  IOIteratorNext, IOObjectRelease, IORegistryEntryCreateCFProperties, IOServiceGetMatchingServices,
+  IOServiceMatching, kIOMasterPortDefault,
+  types::{io_iterator_t, io_registry_entry_t},
+};
 
 use crate::{Gpu, GpuInfo};
 
@@ -76,7 +81,7 @@ impl GpuInfo for MacGpuInfo {
 pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
   unsafe {
     // Get devices
-    let match_dict = IOServiceMatching(b"IOAccelerator\0".as_ptr() as *const i8);
+    let match_dict = IOServiceMatching(c"IOAccelerator".as_ptr());
     let mut itr: io_iterator_t = 0;
     let result = IOServiceGetMatchingServices(kIOMasterPortDefault, match_dict, &mut itr);
 
@@ -96,7 +101,8 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
         return Err("Failed to get properties for IOAccelerator".into());
       }
 
-      let dict: CFDictionary<CFString, CFTypeRef> = CFDictionary::wrap_under_create_rule(service_dict);
+      let dict: CFDictionary<CFString, CFTypeRef> =
+        CFDictionary::wrap_under_create_rule(service_dict);
       let vendor = dict.find(CFString::from_static_string("vendor-id"));
       let model = dict.find(CFString::from_static_string("model"));
       let family = "N/A";
@@ -107,18 +113,23 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
 
       let vendor_ptr = vendor.unwrap();
       let model_ptr = model.unwrap();
-      let model: CFString = CFString::wrap_under_get_rule(model_ptr.as_void_ptr() as *const __CFString);
+      let model: CFString =
+        CFString::wrap_under_get_rule(model_ptr.as_void_ptr() as *const __CFString);
       let vendor: CFData = CFData::wrap_under_get_rule(vendor_ptr.as_void_ptr() as *const __CFData);
       let mut vendor = vendor.bytes().to_vec();
       vendor.reverse();
 
-      let vendor = vendor.iter().map(|b| {
-        if *b != 0 {
-          return format!("{:02x}", b);
-        }
+      let vendor = vendor
+        .iter()
+        .map(|b| {
+          if *b != 0 {
+            return format!("{:02x}", b);
+          }
 
-        "".to_string()
-      }).collect::<Vec<String>>().join("");
+          "".to_string()
+        })
+        .collect::<Vec<String>>()
+        .join("");
 
       // Is this needed? Idk
       // CFRelease(service_dict as *mut _);
@@ -140,7 +151,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
 pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, Box<dyn Error>> {
   unsafe {
     // Get devices
-    let match_dict = IOServiceMatching(b"IOAccelerator\0".as_ptr() as *const i8);
+    let match_dict = IOServiceMatching(c"IOAccelerator".as_ptr());
     let mut itr: io_iterator_t = 0;
     let result = IOServiceGetMatchingServices(kIOMasterPortDefault, match_dict, &mut itr);
 
@@ -161,9 +172,9 @@ pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, 
         return Err("Failed to get properties for IOAccelerator".into());
       }
 
-      let dict: CFDictionary<CFString, CFTypeRef> = CFDictionary::wrap_under_create_rule(service_dict);
-      let perf_properties = dict
-        .find(CFString::from_static_string("PerformanceStatistics"));
+      let dict: CFDictionary<CFString, CFTypeRef> =
+        CFDictionary::wrap_under_create_rule(service_dict);
+      let perf_properties = dict.find(CFString::from_static_string("PerformanceStatistics"));
 
       if perf_properties.is_none() {
         CFRelease(service_dict as *mut _);
@@ -171,7 +182,9 @@ pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, 
         return Err("Failed to get properties for IOAccelerator".into());
       }
 
-      let perf_properties: CFDictionary<CFString, CFTypeRef> = CFDictionary::wrap_under_create_rule(perf_properties.unwrap().as_void_ptr() as *const __CFDictionary);
+      let perf_properties: CFDictionary<CFString, CFTypeRef> = CFDictionary::wrap_under_create_rule(
+        perf_properties.unwrap().as_void_ptr() as *const __CFDictionary,
+      );
       let stat = perf_properties.find(CFString::from_static_string(stat));
 
       if stat.is_none() {
@@ -181,14 +194,15 @@ pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, 
       }
 
       let stat = stat.unwrap();
-  
+
       CFRelease(service_dict as CFTypeRef);
       IOObjectRelease(entry);
       IOObjectRelease(itr);
 
       match data_type {
         DataType::Number => {
-          let stat: CFNumber = CFNumber::wrap_under_get_rule(stat.as_void_ptr() as *const __CFNumber);
+          let stat: CFNumber =
+            CFNumber::wrap_under_get_rule(stat.as_void_ptr() as *const __CFNumber);
           let stat_u64 = stat.to_i64().unwrap_or(0);
           return Ok(stat_u64.try_into().unwrap_or(0));
         }

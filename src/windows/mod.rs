@@ -1,5 +1,5 @@
-use std::{error::Error, ptr::null_mut};
 use serde::Deserialize;
+use std::{error::Error, ptr::null_mut};
 use windows::{
   Win32::System::Performance::{
     PDH_CSTATUS_BAD_COUNTERNAME, PDH_CSTATUS_VALID_DATA, PDH_FMT_DOUBLE, PdhAddCounterW,
