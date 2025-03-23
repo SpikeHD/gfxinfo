@@ -1,5 +1,4 @@
 use std::{error::Error, ptr::null_mut};
-
 use serde::Deserialize;
 use windows::{
   Win32::System::Performance::{
@@ -12,6 +11,9 @@ use windows::{
 use wmi::{COMLibrary, WMIConnection};
 
 use crate::{Gpu, GpuInfo};
+
+#[cfg(feature = "nvidia")]
+use crate::nvidia;
 
 #[derive(Debug)]
 pub struct WindowsGpu {
@@ -88,6 +90,15 @@ struct WMIGpu {
 }
 
 pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
+  // Prefer using the easy Nvidia library
+  #[cfg(feature = "nvidia")]
+  {
+    let gpu = nvidia::active_gpu()?;
+    if let Ok(gpu) = gpu {
+      return Ok(gpu);
+    }
+  }
+
   let com = COMLibrary::new()?;
   let wmi = WMIConnection::new(com)?;
   let gpu: Vec<WMIGpu> = wmi.raw_query("SELECT * FROM Win32_VideoController")?;

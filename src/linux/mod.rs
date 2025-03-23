@@ -1,11 +1,12 @@
 use std::error::Error;
 
 #[cfg(feature = "amd")]
-pub mod amd;
+mod amd;
 #[cfg(feature = "intel")]
-pub mod intel;
+mod intel;
+// The library we use for Nvidia is cross-platform
 #[cfg(feature = "nvidia")]
-pub mod nvidia;
+use crate::nvidia;
 
 pub fn active_gpu() -> Result<Box<dyn crate::Gpu>, Box<dyn Error>> {
   #[cfg(feature = "amd")]

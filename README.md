@@ -28,6 +28,12 @@ println!("Load: {}%", info.load_pct());
 println!("Temperature: {} C", info.temperature() / 1000);
 ```
 
+# Features
+
+* Cross-platform, cross-vendor support
+* Plenty of feature flags
+* Simple
+
 # Feature flags
 
 | Feature | Description | Default |
