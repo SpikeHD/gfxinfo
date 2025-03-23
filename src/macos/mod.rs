@@ -1,29 +1,17 @@
 use std::{error::Error, marker::{PhantomData, PhantomPinned}, ptr::null_mut};
 
-use core_foundation::{base::CFTypeRef, dictionary::{CFDictionaryRef, CFMutableDictionaryRef}, string::CFStringRef};
+use io_kit_sys::{
+  kIOMasterPortDefault, ret::kIOReturnSuccess, types::{io_iterator_t, io_registry_entry_t}, IOIteratorNext, IOObjectRelease, IORegistryEntryCreateCFProperties, IOServiceGetMatchingService, IOServiceGetMatchingServices, IOServiceMatching
+};
+use core_foundation::{base::{kCFAllocatorDefault, CFRelease, CFTypeRef, TCFType, TCFTypeRef}, data::{CFData, __CFData}, string::{CFStringRef, __CFString}};
+use core_foundation::dictionary::{CFDictionary, CFDictionaryRef, CFMutableDictionaryRef};
+use core_foundation::number::{CFNumber, CFNumberRef};
+use core_foundation::string::CFString;
+use std::ptr;
+use std::thread;
+use std::time::Duration;
 
 use crate::{Gpu, GpuInfo};
-
-pub type CVoidRef = *const std::ffi::c_void;
-
-
-#[repr(C)]
-struct IOReportSubscription {
-  _data: [u8; 0],
-  _phantom: PhantomData<(*mut u8, PhantomPinned)>,
-}
-
-type IOReportSubscriptionRef = *const IOReportSubscription;
-
-// https://medium.com/@vladkens/how-to-get-macos-power-metrics-with-rust-d42b0ad53967
-#[link(name = "IOReport", kind = "dylib")]
-unsafe extern "C" {
-  fn IOReportCopyChannelsInGroup(a: CFStringRef, b: CFStringRef, c: u64, d: u64, e: u64) -> CFDictionaryRef;
-  fn IOReportMergeChannels(a: CFDictionaryRef, b: CFDictionaryRef, nil: CFTypeRef);
-  fn IOReportCreateSubscription(a: CVoidRef, b: CFMutableDictionaryRef, c: *mut CFMutableDictionaryRef, d: u64, b: CFTypeRef) -> IOReportSubscriptionRef;
-  fn IOReportCreateSamples(a: IOReportSubscriptionRef, b: CFMutableDictionaryRef, c: CFTypeRef) -> CFDictionaryRef;
-  fn IOReportCreateSamplesDelta(a: CFDictionaryRef, b: CFDictionaryRef, c: CFTypeRef) -> CFDictionaryRef;
-}
 
 #[derive(Debug)]
 pub struct MacGpu {
@@ -79,5 +67,64 @@ impl GpuInfo for MacGpuInfo {
 }
 
 pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
+  unsafe {
+    // Get devices
+    let match_dict = IOServiceMatching(b"IOAccelerator\0".as_ptr() as *const i8);
+    let mut itr: io_iterator_t = 0;
+    let result = IOServiceGetMatchingServices(kIOMasterPortDefault, match_dict, &mut itr);
+
+    if result != 0 {
+      return Err("Failed to get IOAccelerator services".into());
+    }
+
+    let mut entry: io_registry_entry_t;
+
+    while {
+      entry = IOIteratorNext(itr);
+      entry != 0
+    } {
+      let mut service_dict: CFMutableDictionaryRef = null_mut();
+
+      if IORegistryEntryCreateCFProperties(entry, &mut service_dict, kCFAllocatorDefault, 0) != 0 {
+        return Err("Failed to get properties for IOAccelerator".into());
+      }
+
+      let dict: CFDictionary<CFString, CFTypeRef> = CFDictionary::wrap_under_create_rule(service_dict);
+      let vendor = dict.find(CFString::from_static_string("vendor-id"));
+      let model = dict.find(CFString::from_static_string("model"));
+      let family = "N/A";
+
+      if vendor.is_none() || model.is_none() {
+        return Err("Failed to get properties for IOAccelerator".into());
+      }
+
+      let vendor_ptr = vendor.unwrap();
+      let model_ptr = model.unwrap();
+      let model: CFString = CFString::wrap_under_get_rule(model_ptr.as_void_ptr() as *const __CFString);
+      let vendor: CFData = CFData::wrap_under_get_rule(vendor_ptr.as_void_ptr() as *const __CFData);
+      let mut vendor = vendor.bytes().to_vec();
+      vendor.reverse();
+
+      let vendor = vendor.iter().map(|b| {
+        if *b != 0 {
+          return format!("{:02x}", b);
+        }
+
+        "".to_string()
+      }).collect::<Vec<String>>().join("");
+
+      // Is this needed? Idk
+      // CFRelease(service_dict as *mut _);
+      IOObjectRelease(entry);
+
+      return Ok(Box::new(MacGpu {
+        vendor,
+        model: model.to_string(),
+        family: family.to_string(),
+        device_id: 0x0,
+      }));
+    }
+  }
+
   Err("No GPU found".into())
 }

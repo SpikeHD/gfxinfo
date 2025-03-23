@@ -23,3 +23,6 @@ amd = ["dep:libdrm_amdgpu_sys"]
 nvidia = ["dep:nvml-wrapper"]
 intel = []
 gpu_info = []
+
+[dependencies]
+io-kit-sys = "0.4.1"
