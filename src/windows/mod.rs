@@ -1,7 +1,14 @@
 use std::{error::Error, ptr::null_mut};
 
 use serde::Deserialize;
-use windows::{core::PCWSTR, Win32::System::Performance::{PdhAddCounterW, PdhCloseQuery, PdhCollectQueryData, PdhGetFormattedCounterValue, PdhGetRawCounterValue, PdhOpenQueryW, PDH_CSTATUS_BAD_COUNTERNAME, PDH_CSTATUS_VALID_DATA, PDH_FMT_DOUBLE}};
+use windows::{
+  Win32::System::Performance::{
+    PDH_CSTATUS_BAD_COUNTERNAME, PDH_CSTATUS_VALID_DATA, PDH_FMT_DOUBLE, PdhAddCounterW,
+    PdhCloseQuery, PdhCollectQueryData, PdhGetFormattedCounterValue, PdhGetRawCounterValue,
+    PdhOpenQueryW,
+  },
+  core::PCWSTR,
+};
 use wmi::{COMLibrary, WMIConnection};
 
 use crate::{Gpu, GpuInfo};
@@ -54,16 +61,12 @@ impl GpuInfo for WindowsGpuInfo {
   }
 
   fn used_vram(&self) -> u64 {
-    unsafe {
-      counter_value("\\GPU Adapter Memory(*)\\Dedicated Usage".to_string())
-        .unwrap_or(0)
-    }
+    unsafe { counter_value("\\GPU Adapter Memory(*)\\Dedicated Usage".to_string()).unwrap_or(0) }
   }
 
   fn load_pct(&self) -> u32 {
     unsafe {
-      counter_value("\\GPU Engine(*)\\Utilization Percentage".to_string())
-        .unwrap_or(0) as u32
+      counter_value("\\GPU Engine(*)\\Utilization Percentage".to_string()).unwrap_or(0) as u32
     }
   }
 
@@ -94,17 +97,15 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
     None => return Err("No GPU found".into()),
   };
 
-  Ok(Box::new(
-    WindowsGpu {
-      total_vram: gpu.adapter_ram as u64,
-  
-      vendor: gpu.video_processor.clone(),
-      model: gpu.name.clone(),
-      family: gpu.adapter_compatibility.clone(),
-      // TODO: fix
-      device_id: 0x0,
-    }
-  ))
+  Ok(Box::new(WindowsGpu {
+    total_vram: gpu.adapter_ram as u64,
+
+    vendor: gpu.video_processor.clone(),
+    model: gpu.name.clone(),
+    family: gpu.adapter_compatibility.clone(),
+    // TODO: fix
+    device_id: 0x0,
+  }))
 }
 
 pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>> {
@@ -112,7 +113,7 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
   let status = PdhOpenQueryW(None, 0, query);
 
   if status != 0 {
-    return Err(format!("Could not open query: {}", status).into())
+    return Err(format!("Could not open query: {}", status).into());
   }
 
   let counter_path = PCWSTR(
@@ -120,38 +121,28 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
       .encode_utf16()
       .chain(std::iter::once(0))
       .collect::<Vec<u16>>()
-      .as_ptr()
+      .as_ptr(),
   );
 
   let counter = null_mut();
 
-  let status = PdhAddCounterW(
-    *query,
-    counter_path,
-    0,
-    counter
-  );
+  let status = PdhAddCounterW(*query, counter_path, 0, counter);
 
   if status != 0 {
-    return Err(format!("Could not add counter: {}", status).into())
+    return Err(format!("Could not add counter: {}", status).into());
   }
-  
+
   let mut value = null_mut();
   let status = PdhCollectQueryData(*query);
 
   if status != 0 {
-    return Err(format!("Could not collect query data: {}", status).into())
+    return Err(format!("Could not collect query data: {}", status).into());
   }
 
-  let status = PdhGetFormattedCounterValue(
-    *counter,
-    PDH_FMT_DOUBLE,
-    None,
-    value
-  );
+  let status = PdhGetFormattedCounterValue(*counter, PDH_FMT_DOUBLE, None, value);
 
   if status != 0 {
-    return Err(format!("Could not get raw counter value: {}", status).into())
+    return Err(format!("Could not get raw counter value: {}", status).into());
   }
 
   // Deref value
@@ -162,7 +153,7 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
   let status = PdhCloseQuery(*query);
 
   if status != 0 {
-    return Err(format!("Could not close query: {}", status).into())
+    return Err(format!("Could not close query: {}", status).into());
   }
 
   Ok(value)

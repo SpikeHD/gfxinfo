@@ -12,7 +12,7 @@ pub fn active_gpu() -> Result<Box<dyn crate::Gpu>, Box<dyn Error>> {
   {
     let gpu = amd::active_gpu();
     if let Ok(gpu) = gpu {
-      return Box::new(gpu);
+      return Ok(Box::new(gpu));
     }
   }
 
@@ -20,12 +20,12 @@ pub fn active_gpu() -> Result<Box<dyn crate::Gpu>, Box<dyn Error>> {
   {
     let gpu = nvidia::active_gpu();
     if let Ok(gpu) = gpu {
-      return Box::new(gpu);
+      return Ok(Box::new(gpu));
     }
   }
 
   #[cfg(feature = "intel")]
-  {
-    todo!()
-  }
+  {}
+
+  Err("No GPU found".into())
 }
