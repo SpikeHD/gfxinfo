@@ -16,6 +16,7 @@ nvml-wrapper = { version = "0.10.0", optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 core-foundation = "0.10.0"
+io-kit-sys = "0.4.1"
 
 [features]
 default = ["amd", "nvidia", "intel", "gpu_info"]
@@ -23,6 +24,3 @@ amd = ["dep:libdrm_amdgpu_sys"]
 nvidia = ["dep:nvml-wrapper"]
 intel = []
 gpu_info = []
-
-[dependencies]
-io-kit-sys = "0.4.1"
