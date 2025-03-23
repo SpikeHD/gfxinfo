@@ -1,7 +1,7 @@
 use std::{error::Error, fmt::Debug};
 
 // The library we use for Nvidia is cross-platform
-#[cfg(feature = "nvidia")]
+#[cfg(all(feature = "nvidia", not(target_os = "macos")))]
 mod nvidia;
 
 #[cfg(target_os = "linux")]
@@ -16,6 +16,13 @@ mod windows;
 #[cfg(target_os = "windows")]
 mod platform {
   pub use crate::windows::*;
+}
+
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+mod platform {
+  pub use crate::macos::*;
 }
 
 pub trait Gpu: Debug {

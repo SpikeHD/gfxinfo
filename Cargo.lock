@@ -64,6 +64,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "core-foundation"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b55271e5c8c478ad3f38ad24ef34923091e0548492a266d19b3c0b4d82574c63"
+dependencies = [
+ "core-foundation-sys",
+ "libc",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -203,6 +213,7 @@ dependencies = [
 name = "gpuinfo"
 version = "0.1.0"
 dependencies = [
+ "core-foundation",
  "libdrm_amdgpu_sys",
  "nvml-wrapper",
  "serde",
