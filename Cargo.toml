@@ -6,7 +6,7 @@ description = "Rust library for querying GPU information"
 license = "Apache-2.0"
 repository = "https://github.com/SpikeHD/gfxinfo"
 readme = "README.md"
-keywords = ["gpu", "amd", "nvidia", "intel", "macos", "windows", "linux"]
+keywords = ["gpu", "amd", "nvidia", "intel", "cross-platform"]
 categories = ["hardware-support"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
