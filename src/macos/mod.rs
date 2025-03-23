@@ -20,7 +20,7 @@ use crate::{Gpu, GpuInfo};
 
 pub enum DataType {
   Number,
-  String,
+  _String,
 }
 
 #[derive(Debug)]
