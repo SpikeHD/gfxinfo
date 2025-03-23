@@ -16,6 +16,7 @@ use io_kit_sys::{
   types::{io_iterator_t, io_registry_entry_t},
 };
 
+use crate::util::pci::vendor_id_to_name;
 use crate::{Gpu, GpuInfo};
 
 pub enum DataType {
@@ -137,7 +138,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
       IOObjectRelease(itr);
 
       return Ok(Box::new(MacGpu {
-        vendor,
+        vendor: vendor_id_to_name(u16::from_str_radix(&vendor, 16).unwrap_or(0)).to_string(),
         model: model.to_string(),
         family: family.to_string(),
         device_id: 0x0,

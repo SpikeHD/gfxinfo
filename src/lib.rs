@@ -25,6 +25,8 @@ mod platform {
   pub use crate::macos::*;
 }
 
+mod util;
+
 pub trait Gpu: Debug {
   /// Get the GPU vendor (ie. AMD, Nvidia).
   fn vendor(&self) -> &str;
