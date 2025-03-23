@@ -1,18 +1,18 @@
 <div align="center">
-  <h1>gpuinfo</h1>
+  <h1>gfxinfo</h1>
   <p>
     Rust library for querying GPU information
   </p>
 </div>
 
 <div align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/SpikeHD/gpuinfo/format.yml?label=code quality" />
+  <img src="https://img.shields.io/github/actions/workflow/status/SpikeHD/gfxinfo/format.yml?label=code quality" />
 </div>
 
 # TL;DR
 
 ```rust
-use gpuinfo::active_gpu;
+use gfxinfo::active_gpu;
 
 let gpu = active_gpu();
 println!("GPU vendor: {}", gpu.vendor());

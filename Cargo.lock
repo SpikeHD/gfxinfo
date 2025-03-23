@@ -210,7 +210,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpuinfo"
+name = "gfxinfo"
 version = "0.1.0"
 dependencies = [
  "core-foundation",
