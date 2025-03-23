@@ -123,6 +123,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
       // Is this needed? Idk
       // CFRelease(service_dict as *mut _);
       IOObjectRelease(entry);
+      IOObjectRelease(itr);
 
       return Ok(Box::new(MacGpu {
         vendor,
@@ -156,6 +157,7 @@ pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, 
       let mut service_dict: CFMutableDictionaryRef = null_mut();
 
       if IORegistryEntryCreateCFProperties(entry, &mut service_dict, kCFAllocatorDefault, 0) != 0 {
+        IOObjectRelease(entry);
         return Err("Failed to get properties for IOAccelerator".into());
       }
 
@@ -164,6 +166,8 @@ pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, 
         .find(CFString::from_static_string("PerformanceStatistics"));
 
       if perf_properties.is_none() {
+        CFRelease(service_dict as *mut _);
+        IOObjectRelease(entry);
         return Err("Failed to get properties for IOAccelerator".into());
       }
 
@@ -171,13 +175,22 @@ pub fn performance_stat(stat: &'static str, data_type: DataType) -> Result<u64, 
       let stat = perf_properties.find(CFString::from_static_string(stat));
 
       if stat.is_none() {
+        CFRelease(service_dict as *mut _);
+        IOObjectRelease(entry);
         return Err("Failed to get properties for IOAccelerator".into());
       }
 
+      let stat = stat.unwrap();
+  
+      CFRelease(service_dict as CFTypeRef);
+      IOObjectRelease(entry);
+      IOObjectRelease(itr);
+
       match data_type {
         DataType::Number => {
-          let stat: CFNumber = CFNumber::wrap_under_get_rule(stat.unwrap().as_void_ptr() as *const __CFNumber);
-          return Ok(stat.to_i64().unwrap_or(0) as u64);
+          let stat: CFNumber = CFNumber::wrap_under_get_rule(stat.as_void_ptr() as *const __CFNumber);
+          let stat_u64 = stat.to_i64().unwrap_or(0);
+          return Ok(stat_u64.try_into().unwrap_or(0));
         }
         _ => {
           return Err("Unsupported data type".into());
