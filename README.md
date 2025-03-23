@@ -59,6 +59,7 @@ println!("Temperature: {} C", info.temperature() / 1000);
     * [x] Windows
     * [ ] Linux
   * [ ] Generic/Other
+    * [x] Apple/MacOS
 * [ ] Supported information
   * [x] Vendor
   * [x] Model
