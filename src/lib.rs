@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 use std::{error::Error, fmt::Debug};
 
 // The library we use for Nvidia is cross-platform

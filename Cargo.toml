@@ -2,6 +2,12 @@
 name = "gfxinfo"
 version = "0.1.0"
 edition = "2024"
+description = "Rust library for querying GPU information"
+license = "Apache-2.0"
+repository = "https://github.com/SpikeHD/gfxinfo"
+readme = "README.md"
+keywords = ["gpu", "amd", "nvidia", "intel", "macos", "windows", "linux"]
+categories = ["hardware-support"]
 
 [target.'cfg(target_os = "linux")'.dependencies]
 libdrm_amdgpu_sys = { version = "0.8.4", optional = true }
