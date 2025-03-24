@@ -7,6 +7,7 @@
 
 <div align="center">
   <img src="https://img.shields.io/github/actions/workflow/status/SpikeHD/gfxinfo/format.yml?label=code quality" />
+  <img src="https://img.shields.io/github/actions/workflow/status/SpikeHD/gfxinfo/build.yml?label=build" />
 </div>
 
 # TL;DR
