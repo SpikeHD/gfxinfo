@@ -46,6 +46,8 @@ println!("Temperature: {} C", info.temperature() / 1000);
 
 # TODO
 
+Nothing is final, some things on some platforms are stubbed. PRs are welcome!
+
 (Windows support is speculative, as it uses the Windows API and I don't have a Windows machine to test on. It did work partially in a VM using the basic display driver!)
 
 * [ ] Cross-platform vendor support
