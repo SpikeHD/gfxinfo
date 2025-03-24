@@ -156,12 +156,12 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
     return Err(format!("Could not get raw counter value: {}", status).into());
   }
 
-  let mut value = 0u64;
+  let mut raw_value = 0u64;
 
   // Deref value
   unsafe {
     let deref = *value;
-    value = value.Anonymous.doubleValue.round() as u64;
+    raw_value = value.Anonymous.doubleValue.round() as u64;
   }
 
   // Close query
