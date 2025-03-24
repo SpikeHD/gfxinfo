@@ -93,7 +93,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
   // Prefer using the easy Nvidia library
   #[cfg(feature = "nvidia")]
   {
-    let gpu = nvidia::active_gpu()?;
+    let gpu = nvidia::active_gpu();
     if let Ok(gpu) = gpu {
       return Ok(Box::new(gpu));
     }
@@ -121,7 +121,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
 
 pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>> {
   let query = null_mut();
-  let status = unsafe { PdhOpenQueryW(None, 0, query); };
+  let status = unsafe { PdhOpenQueryW(None, 0, query) };
 
   if status != 0 {
     return Err(format!("Could not open query: {}", status).into());
@@ -137,20 +137,20 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
 
   let counter = null_mut();
 
-  let status = unsafe { PdhAddCounterW(*query, counter_path, 0, counter); };
+  let status = unsafe { PdhAddCounterW(*query, counter_path, 0, counter) };
 
   if status != 0 {
     return Err(format!("Could not add counter: {}", status).into());
   }
 
   let value = null_mut();
-  let status = unsafe { PdhCollectQueryData(*query); };
+  let status = unsafe { PdhCollectQueryData(*query) };
 
   if status != 0 {
     return Err(format!("Could not collect query data: {}", status).into());
   }
 
-  let status = unsafe { PdhGetFormattedCounterValue(*counter, PDH_FMT_DOUBLE, None, value); };
+  let status = unsafe { PdhGetFormattedCounterValue(*counter, PDH_FMT_DOUBLE, None, value) };
 
   if status != 0 {
     return Err(format!("Could not get raw counter value: {}", status).into());
@@ -165,7 +165,7 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
   }
 
   // Close query
-  let status = unsafe { PdhCloseQuery(*query); };
+  let status = unsafe { PdhCloseQuery(*query) };
 
   if status != 0 {
     return Err(format!("Could not close query: {}", status).into());
