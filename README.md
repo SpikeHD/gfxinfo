@@ -56,9 +56,11 @@ Nothing is final, some things on some platforms are stubbed. PRs are welcome!
     * [x] Linux 
   * [x] AMD
     * [x] Windows
+      * [ ] Use `libloading` to load `atiadlxx.dll` and use those functions
     * [x] Linux
   * [ ] Intel
     * [x] Windows
+      * [ ] Use driver-specific functions, as the Windows API is kinda meh
     * [ ] Linux
   * [ ] Generic/Other
     * [x] Apple/MacOS
