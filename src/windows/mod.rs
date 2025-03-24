@@ -121,7 +121,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
 
 pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>> {
   let query = null_mut();
-  let status = PdhOpenQueryW(None, 0, query);
+  let status = unsafe { PdhOpenQueryW(None, 0, query); };
 
   if status != 0 {
     return Err(format!("Could not open query: {}", status).into());
@@ -137,31 +137,35 @@ pub unsafe fn counter_value(counter_path: String) -> Result<u64, Box<dyn Error>>
 
   let counter = null_mut();
 
-  let status = PdhAddCounterW(*query, counter_path, 0, counter);
+  let status = unsafe { PdhAddCounterW(*query, counter_path, 0, counter); };
 
   if status != 0 {
     return Err(format!("Could not add counter: {}", status).into());
   }
 
-  let mut value = null_mut();
-  let status = PdhCollectQueryData(*query);
+  let value = null_mut();
+  let status = unsafe { PdhCollectQueryData(*query); };
 
   if status != 0 {
     return Err(format!("Could not collect query data: {}", status).into());
   }
 
-  let status = PdhGetFormattedCounterValue(*counter, PDH_FMT_DOUBLE, None, value);
+  let status = unsafe { PdhGetFormattedCounterValue(*counter, PDH_FMT_DOUBLE, None, value); };
 
   if status != 0 {
     return Err(format!("Could not get raw counter value: {}", status).into());
   }
 
+  let mut value = 0u64;
+
   // Deref value
-  let value = *value;
-  let value = value.Anonymous.doubleValue.round() as u64;
+  unsafe {
+    let deref = *value;
+    value = value.Anonymous.doubleValue.round() as u64;
+  }
 
   // Close query
-  let status = PdhCloseQuery(*query);
+  let status = unsafe { PdhCloseQuery(*query); };
 
   if status != 0 {
     return Err(format!("Could not close query: {}", status).into());
