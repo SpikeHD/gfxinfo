@@ -95,7 +95,7 @@ pub fn active_gpu() -> Result<Box<dyn Gpu>, Box<dyn Error>> {
   {
     let gpu = nvidia::active_gpu()?;
     if let Ok(gpu) = gpu {
-      return Ok(gpu);
+      return Ok(Box::new(gpu));
     }
   }
 
